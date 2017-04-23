@@ -57,7 +57,7 @@ Un processo può trovarsi un uno dei seguenti stati:
 * **Pronto**: Il processo attende di essere associato ad un unità di elaborazione.
 * **Terminato**
 
-### 3.1.3 Blocco di controllo dei processi
+### 3.1.3 Blocco di controllo dei processi (PCB)
 
 Ogni processo è rappresentato nel sistema da un **blocco di controllo**.
 
@@ -93,10 +93,84 @@ In alcuni sistemi operativi come quelli in time-sharig, si può introdurre uno *
 
 ### 3.2.3 cambio di contesto
 
-Il passaggio della CPU a un nuovo processo implica il salvataggio dello stato del processo attuale e il ripristino dello stato del nuovo processo. Questa procedura si chiama **constext switch**: Il sistema salva il contesto del processo uscente nel suo **PCB** e carica il contesto del processo  che subentra.
+Il passaggio della CPU a un nuovo processo implica il salvataggio dello stato del processo attuale e il ripristino dello stato del nuovo processo. Questa procedura si chiama **context switch**: Il sistema salva il contesto del processo uscente nel suo **PCB** e carica il contesto del processo  che subentra.
 
+### 3.3.1 Creazione di un processo
 
+Durante la propria esecuzione, un processo può creare numerosi altri processi (processo padre e processo figlio) formando un **albero** di processi.
+La maggior parte dei sistemi operativi identifica un processo per mezzo di un numero univoco, detto **pid**.
 
+In Linux il processo "init" svolge il ruolo di processo padre di tutti i processi utente.
+
+Un processo figlio può essere in grado di ottenere le proprie risorse direttamente dal sistema operativo o può essere vincolato a un sottoinsieme delle risorse del processo padre.
+
+Per quanto riguarda l'esecuzione ci sono 2 possibilità:
+1. Il processo genitore continua l'esecuzione in modo concorrente con i propri figli.
+2. Il processo genitore attende che alcuni o tutti i suoi figli terminino.
+
+Per quanto riguarda lo spazio d'indirizzi del nuovo processo altre 2 possibilità:
+1. Il processo figlio è un duplicato del processo genitore (stessi programmi e dati).
+2. Nel processo figlio si carica un nuovo programma.
+
+In UNIX un nuovo processo si crea per mezzo della chiamata di sistema `fork()`, ed è composto di una copia dello spazio degli indirizzi del processo genitore. Questo meccanismo permette di comunicare senza difficoltà con il proprio processo figlio. La chiamata `fork()` riporta il valore 0 nel nuovo processo e riporta il pid del processo figlio nel processo genitore. In questo modo i processi possono procedere sapendo chi è il padre e chi è il figlio.
+
+Generalmente, dopo , uno dei due processi esegue una chiamata di sistema `exec()` pper sostituire lo spazio di memoria del processo con un nuovo programma, quindi avvia la sua esecuzione. Il processo genitore se non ha altro da fare invoca `wait()` per rimuovere se stesso dalla coda ready fino alla terminazione del figlio.
+
+### 3.3.2 Terminazione di un processo
+
+Un processo termina quando finisce l'esecuzione della sua ultima istruzione e invoca la chiamata di sistema `exit()`. Un processo genitore può terminare uno dei suoi proessi figli per diversi motivi:
+* Il processo figlio ha ecceduto nell'uso di alcune tra le risorse che gli sono state assegnate.
+* Il compito assegnato non è più richiesto.
+* Il processo genitore termina e il sistema operativo non consente a un processo figlio di continuare l'esecuzione in tale circostanza(terminazione a cascata).
+
+Un processo genitore può attendere la terminazione di un processo figlio utilizzando la chiamata `wait()`, a cui viene passato un parametro che permette al genitore di ottenere lo stato di uscita del figlio. Quando un processo termina, le sue risorse vengono deallocate ma la sua voce nella tabella dei processi deve rimanere fino a quando il padre chiama wait(). Un processo terminato, ma il cui geitore non ha ancora chiamato `wait()` viene detto **zombie**. Il processo "init" invoca periodicamente `wait()` per raccogliere lo stato di uscita di qualsiasi processo orfano il cui geitore ha terminato senza eseguire la `wait()` e rilascia il suo PID.
+
+## 3.4 Comunicazione tra processi
+
+Un processo è **idipendente** se non può influire su altri processi o suburne l'influsso. è **cooperante** se ifluenza o può essere influenzato da altri processi in esecuzione. Per lo scambio i dati e informazioni i processi cooperanti necessitano di un **meccanismo di comunicazione tra processi** (**IPC**). I modelli fondamentali sono due: a **memoria condivisa** e a **scambio di messaggi**.
+
+### 3.4.1 Sistemi a memoria condivisa
+Richiede che i processi comunicanti allochino una zona di memoria condivisa. L'esecuzione concorrente dei due processi richiede la presenza di un buffer che possa essere riempito dal produttore e svuotato dal consumatore. Il buffer dovrà risiedere in una zona di memoria condivisa. I due processi devono essere sincronizzati in modo tale che il consumatore non tenti di consumare un'unità non ancora pronta. Il buffer può essere **illimitato** o **limitato**.
+
+### 3.4.2 Sistemi a scambio di messaggi
+
+è utile in ambienti distribuiti, dove i processi possono risiedere su macchine diverse connesse da una rete. Un meccanismo a scambio di messaggi deve prevedere almeno 2 operazioni: receive(message) e send(message).
+
+Ci sono diversi metodi per realizzare un canale di comunicazione:
+* comunicazione diretta o indiretta;
+* comunicazione sincrona o asincrona;
+* gestione automatica o esplicita del buffer.
+
+Con la **comunicazione diretta**, ogni processo che intenda comunicare deve nominare esplicitamente il ricevente o il trasmittente della comunicazione. Esiste esattamente un canale tra una coppia di processi. Tali cablature (hard coding) di informazioni nel codice sono meno vantaggiose della seguente soluzione:
+
+Con la **comunicazione idiretta** i messaggi s'iviano a delle **porte** o **mailbox**, due processi possono comunicare solo se condividono la stessa mailbox. Una mailbox può appartenere al processo o al sistema, una mailbox posseduta dal sistema operativo ha una vita autonoma, un sistema premette a un processo le segueti operazioni:
+* creare una nuova mailbox;
+* iviare e ricevere messaggi tramite la mailbox;
+* rimuovere una mailbox.
+
+Lo scambio di messaggi può essere:
+* invio sincrono: il processo che invia il messaggio si blocca nell'attesa che venga ricevuto.
+* invio asincrono: Il processo invia il messaggio e riprende la propria esesecuzione.
+* Ricezione sicrona: Il ricevente si blocca nell'attesa di un messaggio.
+* ricezione asincrona: Il ricevente riceve un messaggio valido o un valore nullo.
+
+Se send() e receive() sono entrambi bloccanti si parla di **rendezvous**.
+
+I messaggi smabiati risiedono in code temporanee, possono essere:
+* capacità zero
+* Capacità limitata
+* Capacità illimitata
+
+Continua...
+
+# Capitolo 4: Thread
+
+Un thread è l'unità di base d'uso della CPU, un processo multithread è in grado di svolgere più compiti in modo concorrente.
+Vantaggi:
+1. **tempo di risposta**, utile nella progettazione di interfacce utente.
+2. **Condivisione delle risorse**, i thread codividono per default la memoria e le risorse del processo al quale appartengono.
+3. **Economia**, è molto più conveniente creare un thread e gestirne i cambi di contesto che creare un nuovo processo.
+4. **Scalabilità**, I vantaggi sono ancora maggiori nelle architetture multiprocessore, dove i thread si possono eseguire in parallelo.
 
 # Capitolo 5: Sincronizzazione dei processi
 
