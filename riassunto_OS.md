@@ -172,5 +172,48 @@ Vantaggi:
 3. **Economia**, è molto più conveniente creare un thread e gestirne i cambi di contesto che creare un nuovo processo.
 4. **Scalabilità**, I vantaggi sono ancora maggiori nelle architetture multiprocessore, dove i thread si possono eseguire in parallelo.
 
+### 4.2.1 Le sfide della programmaizione
+
+Per i programmatori di applicazioni la sfida consiste nel modificare programmi esistenti e progettare nuovi programmi multithread, principali sfide:
+1. **Identificazione dei task**, Consiste nell'esaminare le applicazioni al fine di individuare aree separabili in task distinti che possano essere eseguiti in parallelo.
+2. **Bilanciamento**
+3. **Suddivisione dei dati**
+4. **Dipendenze dei dati**, In casi in cui un task dipende dai dati forniti da un altro, i programmatori devono assicurare che l'esecuzione dei task sia sincronizzata.
+5. **Test e debugging**, è per natura più difficile rispetto alle applicaizioni con un singolo thread.
+
+### 4.2.2 Tipi di parallelismo
+
+In generale, esistono 2 tipi i parallelismo: Il **parallelismo dei dati** riguarda la distribuzione di sottoinsiemi dei dati su più core di elaborazione, Il **parallelismo delle attività** prevede la distribuzione di attività (thread) su più core, ogni thread realizza un'operazione diversa e possono operare sugli stessi dati o su dati diversi.
+
+## 4.3 Modelli di supporto al multithreading
+
+I thread possono essere distiti in thread a livello utente e thread a livello kernel, deve esistere una relazione tra i due livelli:
+* **Modello da molti a uno**: fa corrispondere molti thread a livello utente a un singolo thread livello kernel, è impossibile eseguire thread multipli in parallelo nei sistemi con più core.
+* **Modello uno a uno**: permette esecuzioe parallela ma la creazione di un thread kernel per ogni thread utente genera overhead (usato da linux e windows).
+* ** Modello molti a molti**: non ha i precedenti difetti.
+
+
 # Capitolo 5: Sincronizzazione dei processi
 
+Le procedure del produttore e del consumatore possono non funzionare correttamente sei si eseguono in modo concorrente, le istruzioni contatore++ e contatore-- corrispondono a una serie di istruzioni in linguaggio macchina che possono essere eseguite in una qualunque sequenza che però conservi l'ordine interno di una singola istruzione di alto livello. Si arriva in uno stato non corretto perchè si è permesso a entrambi i processi di manipolare concorrentemete la variabile "contatore", per evitare problemi di questo tipo (**race condition**) occorre assicurare che un solo processo alla volta possa modificare la variabile "contatore".
+
+## 5.2 Problema della sezione critica
+
+Il problema della sezione critica consiste nel progettare un protocollo che i processi possono usare per cooperare. Ogni processo deve chiedere il permesso per entrare nella propria sezione critica. La sezione di codice che realizza questa richiesta è la **sezione d'ingresso**. La sezione critica può essere seguita da una **sezione d'uscita**.
+
+Una soluzione del problema della sezione critica deve soddisfare i tre requisiti:
+1. **Mutua esclusionne**: al più un processo esegue una sezione critica.
+2. **Progresso**: Solo i processi che stanno per entrare in sezione critica possono decidere chi entra.
+3. **Attesa limitata**: Deve esistere un massimo numero di volte per cui un processo può entrare (di seguito)
+
+In un dato momento numerosi processi in modalità kernel possono essere attivi. Se ciò si verifica, il **codice del kernel** è soggetto a **race codition**. Strutture dati dal kernel soggette a questo problema possono essere quelle per l'alloczione della memoria, per la gestione delle interruzioni o le liste dei processi. Le due strategie principali per la gestione delle sezioni critiche nei sistemi operativi sono: **kernel con diritto di prelazione** e ** kernel senza diritto di prelazione. i primi sono immuni a race condition sulle strutture dati del kernel ma i kernel con diritto di prelazione possono vantare di una maggiore prontezza nelle risposte, inoltre sono più adatti alla programmazione real-time.
+
+## 5.3 Soluzione di Peterson
+é una soluzione software. A causa del modo in cui i moderni elaboratori eseguono le istruzioni elementari del linguaggio macchina, non è affatto certo che la soluzione di Peterson funzioni correttamente (scopo didattico).
+
+La soluzione è limitata a due processi e richiede che i processi condividano i seguenti dati `int turn;` e `boolean flag[2];`, la variabile turn segnala, di chi sia il turno per l'accesso alla sezione critica mentre l'array flag, indica se un processo sia pronto a entrare nella sezione crtica.
+ **tutti e 3 i requisiti sono soddisfati**.
+
+## 5.4 Hardware per la sincronizzazione
+
+Le tecniche hardware si basano sul concetto dei **lock**, molte delle moderne architetture offrono particolari istruzioni che permettono di controllare e modificare il contenuto di una parola di memoria in modo atomico (`test_and_set()` e `compare_ad_swap()`).
