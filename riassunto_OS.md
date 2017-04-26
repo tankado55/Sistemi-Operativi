@@ -217,3 +217,63 @@ La soluzione è limitata a due processi e richiede che i processi condividano i 
 ## 5.4 Hardware per la sincronizzazione
 
 Le tecniche hardware si basano sul concetto dei **lock**, molte delle moderne architetture offrono particolari istruzioni che permettono di controllare e modificare il contenuto di una parola di memoria in modo atomico (`test_and_set()` e `compare_ad_swap()`).
+
+## 5.5 Lock mutex
+
+Le soluzioni hardware al problema della sezione critica sono complicate e generalmente inaccessibili ai programmatori di applicazioni. In alternativa si implementano strumenti software come il **lock mutex**, in pratica il processo deve acquisire il lock prima di entrare in una sezione critica e rilasciarlo quando esce(acquire() e release()).
+Un lock mutex ha una variabile booleana`available` il cui valore indica se il lock è disponibile o meno, se il lock è disponibile la chiamata `acquire()` ha successo.
+```c++
+acquire() {
+    while (!available
+       ; //attesa attiva
+    available = false;
+}
+
+release() {
+   available = true;
+} 
+```
+Le due chiamate devono essere eseguite atomicamente, quindi i lock mutex spesso sono realizzati utilizzando i meccanismi hardware descritti in precedenza.
+Il principale svantaggio è che richiede **attesa attiva** che spreca cicli di CPU, Gli **spinlock** sono spesso impiegati in sistemi multiprocessore in cui un thread può "girare" su un processore mentre un altro esegue la sua sezione critica.
+
+## 5.6 Semafori
+
+Un **semaforo** è una variabile intera cui si può accedere solo tramite due operazioni atomiche predefinite: `wait()` e `signal()`.
+Si usa distinguere fra **semafori binari** (simili a lock mutex) e **semafori contatore** che trovano applicazione nel controllo dell'accesso a una data risorsa presente in un  numero finito di esemplari. Il semaforo è inizialmente impostato al numero di risorse disponibili, quando il semaforo è a 0 tutte le risorse sono occupate.
+Per superare la necessità dell'attesa attiva nelle definizioni: in `wait()` quando un processo trova il valore del semaforo non positivo invece di restare in attesa attiva può **bloccare** se stesso.
+L'operazione di bloccaggio pone il processo in una coda d'attesa associata al semaforo e pone lo stato del processo a "waiting". Quindi si trasferisce il controllo allo scheduler della CPU che sceglie un altro processo pronto per l'esecuzione.
+Un processo bloccato verrà riavviato in seguito all'esecuzione di un operazione `signal()` da parte di qualche altro processo. Il proceso si riavvia tramite un operazione `wakeup()`, che modifica lo stato del processo da *waiting* a *ready*.
+A ogni semaforo sono associati un valore intero (value) e una lista di processi (list), contenente i processi i attesa a un semaforo, l'operazione `signal()` preleva un processo da tale lista e lo attiva.
+
+Le operazioni sui semafori devono essere eseguite in modo atomico, in un contesto monoprocessore lo si può risolvere semplicemente inibendo le interruzioni durante l'esecuzione di signal() e wait(), mentre nei sistemi multiprocessore i sistei SMP devono mettere a disposizione altre tecniche come `compare_and_swap` e gli spinlock.
+
+La realizzazione di un semaforo con coda di attesa può condurre a una situazione di **stallo**
+
+
+to be continued...
+
+# Capitolo 6: Scheduling della CPU
+
+Lo scheduler può essere **con prelazione** e **senza prelazione** (quando si assegna la CPU a un processo, questo rimane in possesso della CPU fino al momento del suo rilascio dovuto al termine dell'esecuzione o al passaggio allo stato di attesa. Lo scheduling con prelazione può portare a race condition.
+
+Un elemento coinvolto nella funzione di scheduling della CPU è il **dispatcher**, si ctratta del modulo che passa effettivamente il controllo della CPU al processo scelto dallo scheduler a breve termine.
+
+## 6.2 Criteri di scheuling
+
+Diversi algoritmi di scheduling della CPU hanno proprietà differenti e possono favorire una particolare classe di processi.
+
+Alcuni criteri per il confronto di algoritmi:
+* **utilizzo della CPU**: La CPU deve essere più attiva possibile.
+* **Produttività**: è data dal numero di processi completati nell'unità di tempo.
+* **Tempo di completamento**: è il tempo necessario per eseguire il processo stesso, ed è la somma dai tempi passati nell'attesa dell'ingresso in memoria, nella ready queque, durante l'esecuzione della CPU e nelle operazioni di I/O.
+* **Tempo di attesa**: L'algoritmo di scheduling influisce solo sul tempo di attesa nella ready queque. è la somma degli intervalli d'attesa passati in questa coda.
+* **tempo di risposta**: è dato dal tempo che intercorre tra la effettuazione di una richiesta e la prima risposta prodotta, ma non dal suo tempo necessario per completare l'output.
+Nella maggior parte dei casi si ottimizzano i valoi medi ma in alcune circostanze è più opportuno ottimizzare i valorri minimi e massimi.
+
+### 6.3.1 Scheduling in ordine d'arrivo
+
+é il più semplice algoritmo di scheduling, si basa su una coda FIFO, quando un processo arriva entra nella ready queque, si collega il suo PCB all'ultimo elemento della coda.
+Il tempo medio di attesa può variare grandemente all'aumentare della variabilità dei CPU burst dei vari processi. Si ha **effetto convoglio**. Non ha prelazione.
+
+### 6.3.2 Scheduling shortest-job-first
+
