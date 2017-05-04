@@ -42,6 +42,27 @@ Un secondo gruppo di funzioni del sistema operativo assicura il funzionamento ef
 * **Accounting dell'uso delle risorse**: Vogliamo mantenere traccia di quali utenti usano il calcolatore e quante risorse impiegano, serve per addebitare il costo agli utenti o per redigere statistiche.
 * **Protezione e sicurezza**: Quando più processi sono in esecuzione concorrente essi non devono influenzarsi o interferire con il sistema operativo.
 
+## 2.2 Interfaccia con l'utente del sistema operativo
+
+Vi sono 2 modi fondamentali per gli utenti di comunicare con il sistema operativo:
+* Interfaccia a riga di comando, che può essere implementata in 2 modi: nel primo, lo stesso interprete dei comandi contiene il codice per l'esecuzione del comado, quindi il numero dei comandi che si possono impartire determina le dimensioni dell'interprete. Nel secondo metodo (UNIX), implementa la maggior parte dei comandi per mezzo di programmi di sistema, in questo modo i programmatori possono aggiungere nuovi comandi al sistema.
+* Interfaccia grafica.
+
+## 2.3 Chiamate di sistema
+
+Le **chiamate di sistema** costituiscono un interfaccia per i servizi resi disponibili dal sistema operativo.
+
+La maggior parte dei programmatori usano in genere un **API** che fornisce delle funzioni che invocano le chiamate di sistema per conto del programmatore,
+le più diffuse sono: le API di widows, la API posix (UNIX, Linux e Mac OS X) e la API java per le
+applicazioni eseguite dalla JVM.
+
+## 2.4 Categorie di chiamate di sistema
+
+Le chiamate di sistema sono classificabili in 6 categorie principali:
+
+1. **Controllo dei processi: un programma in esecuzione deve potersi fermare, sia in modo anomalo che in modo normale (`abort()`,`end()`), un processo che
+esegue un programma può richiedere di caricare (`load()`) ed eseguire (`exec()`) un altro programma, inoltre è necessario poter mantenerne il controllo impostando degli attributi, potrebbe essere necessario terminare un programma (`terminate()`), molto spesso due processi possono condividere dati, spesso i sistemi operativi offrono chiamate che consentono di bloccare (`acquire_lock()`) i dati condivisi ecc.
+
 to be continued...
 
 # Capitolo 3: Processi
