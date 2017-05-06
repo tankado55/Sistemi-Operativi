@@ -60,10 +60,55 @@ applicazioni eseguite dalla JVM.
 
 Le chiamate di sistema sono classificabili in 6 categorie principali:
 
-1. **Controllo dei processi: un programma in esecuzione deve potersi fermare, sia in modo anomalo che in modo normale (`abort()`,`end()`), un processo che
+1. **Controllo dei processi**: un programma in esecuzione deve potersi fermare, sia in modo anomalo che in modo normale (`abort()`,`end()`), un processo che
 esegue un programma può richiedere di caricare (`load()`) ed eseguire (`exec()`) un altro programma, inoltre è necessario poter mantenerne il controllo impostando degli attributi, potrebbe essere necessario terminare un programma (`terminate()`), molto spesso due processi possono condividere dati, spesso i sistemi operativi offrono chiamate che consentono di bloccare (`acquire_lock()`) i dati condivisi ecc.
 
-to be continued...
+2. **Gestione dei file**: `create(), delete(), open(),close()`
+
+3. **Gestione dei dispositivi**: `request(), release()` ecc.
+
+4. **Gestione delle informazioni**: Molte delle chiamate di sistema hanno semplicemente lo scopo di trasferire le informazioni tra il programma utente e il sistema operativo, ad esempio: `time()` per ottenere la data.
+
+5. **Comunicazione**: chiamate per consentire la comunicazione dei processi.
+
+6. **Protezione**: Es: `set_permission(), get_permissio()`
+
+## 2.7 Struttura del sistema operativo
+
+### 2.7.1 Struttura semplice
+
+Molti sistemi operativi non hanno una struttura ben definita, come ad esmpio MS-DOS dove non vi è una netta separazione fra le interfacce e i livelli di funzionalità,
+Questa struttura monolitica rendeva difficile l'implementazione e la manutenzione, ma offriva comunque un vantaggio in termini di prestazioni.
+
+### 2.7.2 Metodo stratificato
+
+In presenza di hardware appropriato, i sistemi operativi possono essere suddivisi in moduli più piccoli e gestibili, ciò permette al sistema operativo di mantenere un contollo molto più stretto sul calcolatore e sulle applicazioni che lo utilizzano. Vi sono molti modi per rendere modulare un sistema operativo. Uno di essi
+è il **metodo stratificato**, secondo il quale il sistema è suddiviso in un certo numero di livelli o strati: il più basso corrisponde all'hardware e il più alto all'interfaccia con l'utente. Un tipico strato è composto da strutture dati e da un insieme di routine richiamabili dagli strati di livello più alto.
+
+Il vantaggio principale offerto da questo metodo è dato dalla semplicità di progettazione e di debugging.
+Ogni stato si realizza impiegando unicamente le operazioni messe a disposizione dagli strati inferiori, di conseguenza, ogni strato nasconde a quelli superiori l'esistenza di determinate struttre dati, operazioni e hardware.
+
+La principale difficoltà risiede nella definizione appropriata dei diversi strati, inoltre tende ad essere meno efficiente delle altre.
+
+### 2.7.3 Microkernel
+
+Seguendo questo orientamento si progetta il sistema operativo rimuovendo dal kernel tutti i componenti non essenziali, realizzandoli come programmi di livello utente o
+di sistema.In generale un microkernel offre servizi minimi di gestione dei processi, della memoria e di comunicazione.
+Lo scopo principale del microkernel è fornire funzioni di comunicazione tra i processi client e i vari servizi, anch'essi in esecuzione nello spazio utente, la comunicazione viene realizzata mediante scambio di messaggi con il microkernel.
+
+Uo dei vantaggi del microkernel è la facilità di estensione del sistema operativo, inoltre poichè è ridotto all'essenziale, se il kernel deve essere modificato, i
+cambiamenti da apportare sono ridotti, e il sistema operativo risultante è più semplice da portare su diverse architetture. Inoltre offre maggiori garanzie di sicurezza e affidabilità, poichè i servizi si eseguono in gran parte come processi utente, e non come processi del kernel.
+
+Purtroppo i microkernel possono incorrere in cali di prestazioni dovuti al sovraccarico indotto dall'esecuzione dei processi di sistema in modalità utente.
+
+### 2.7.4 Moduli
+
+Il miglior approccio attualmente disponibile per la progettazione dei sistemi operativi si basa sull'utilizzo di **moduli del kernel caricabili dinamicamente**.
+L'idea di base è che il kernel deve fornire direttamente i servizi principali, mentre gli altri servizi sono implementati in modo dinamico, quando il kernel è in esecuzione. è più flessibile di un sistema a strati, perchè ogni modulo può chiamare qualsiasi altro modulo. (usato in Linux, Mac os X e Windows)
+
+
+
+
 
 # Capitolo 3: Processi
 
@@ -177,7 +222,7 @@ Lo scambio di messaggi può essere:
 
 Se send() e receive() sono entrambi bloccanti si parla di **rendezvous**.
 
-I messaggi smabiati risiedono in code temporanee, possono essere:
+I messaggi scambiati risiedono in code temporanee, possono essere:
 * capacità zero
 * Capacità limitata
 * Capacità illimitata
