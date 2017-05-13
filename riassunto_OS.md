@@ -134,14 +134,14 @@ Un **PCB** contiene molte informazioni connesse a un processo specifico:
 Quando si verifica un'interruzione della CPU si devono salvare tutte queste informazioni, in modo da permettere la correttaesecuzione del processo in un momento successivo.
 * **Informazioni sullo scheduling**: priorità ecc.
 * **Informazioni sulla gestione della memoria**
-* **Informazioni di acocunting**: Quota d'uso, tempo di utilizzo della CPU ecc.
+* **Informazioni di accounting**: Quota d'uso, tempo di utilizzo della CPU ecc.
 * **Informazioni sullo stato dell'I/O**: lista dei dispositivi assegnati a un processo, elenco dei file aperti ecc.
 
 ### 3.2.1 Code di scheduling
 
 Ogni processo è inserito in una **coda di processi**.
 Un nuovo processo si colloca inizialmente nella ready queue, dove attende finchè non è selezionato per essere eseguito. Una volta che il processo è in fase di esecuzione, si può verificare uno dei seguenti eventi:
-* Il processo può emettere una richiesta di I/Oe quindi essere inserito in una coda di I/O;
+* Il processo può emettere una richiesta di I/O e quindi essere inserito in una coda di I/O;
 * Il processo può creare un nuovo processo figlio e attendere la terminazione;
 * Il processo può essere rimosso forzatamente dalla CPU ed essere reinserito nella coda dei processi pronti.
 
@@ -155,7 +155,7 @@ Lo scheduler a breve termine seleziona frequentemete un nuovo processo per la CP
 
 é fondamentale che lo scheduler a lungo termine selezioni una buona combinazione di processi I/O bound e CPU bound.
 
-In alcuni sistemi operativi come quelli in time-sharig, si può introdurre uno **scheduler a medio termine**, in alcuni casi può essere vantaggioso rimuovere processi dalla memoria e reintrodurlo in seguito, questo sistema si chiama avvicendamento dei processi in memoria (**swapping**). Può servie a migliorare la combinazione dei processi o per liberare memoria.
+In alcuni sistemi operativi come quelli in time-sharig, si può introdurre uno **scheduler a medio termine**, in alcuni casi può essere vantaggioso rimuovere processi dalla memoria e reintrodurli in seguito, questo sistema si chiama avvicendamento dei processi in memoria (**swapping**). Può servie a migliorare la combinazione dei processi o per liberare memoria.
 
 ### 3.2.3 cambio di contesto
 
@@ -193,7 +193,7 @@ Un processo genitore può attendere la terminazione di un processo figlio utiliz
 
 ## 3.4 Comunicazione tra processi
 
-Un processo è **idipendente** se non può influire su altri processi o suburne l'influsso. è **cooperante** se ifluenza o può essere influenzato da altri processi in esecuzione. Per lo scambio i dati e informazioni i processi cooperanti necessitano di un **meccanismo di comunicazione tra processi** (**IPC**). I modelli fondamentali sono due: a **memoria condivisa** e a **scambio di messaggi**.
+Un processo è **idipendente** se non può influire su altri processi o suburne l'influsso. è **cooperante** se ifluenza o può essere influenzato da altri processi in esecuzione. Per lo scambio di dati e informazioni i processi cooperanti necessitano di un **meccanismo di comunicazione tra processi** (**IPC**). I modelli fondamentali sono due: a **memoria condivisa** e a **scambio di messaggi**.
 
 ### 3.4.1 Sistemi a memoria condivisa
 Richiede che i processi comunicanti allochino una zona di memoria condivisa. L'esecuzione concorrente dei due processi richiede la presenza di un buffer che possa essere riempito dal produttore e svuotato dal consumatore. Il buffer dovrà risiedere in una zona di memoria condivisa. I due processi devono essere sincronizzati in modo tale che il consumatore non tenti di consumare un'unità non ancora pronta. Il buffer può essere **illimitato** o **limitato**.
@@ -227,7 +227,26 @@ I messaggi scambiati risiedono in code temporanee, possono essere:
 * Capacità limitata
 * Capacità illimitata
 
-Continua...
+## 3.6 Comunicazione nei sistemi client-server
+
+### 3.6.1 Socket
+Una **socket** è definita come l'estremità di un canale di comunicazione. Una coppia di processi che comunica attraverso una rete usa una coppia di socket, ogni socket
+è identificata da un indirizzo IP concatenato a un numero di porta.
+Il server attende le richieste del client, stando in ascolto sulla porta specificata, quando il server riceve una richiesta, accetta la connessioe proveniente dalla soccket del client, e si stabilisce la comunicazione.
+I server che svolgono servizi specifici stanno in ascolto su porte ben note (tutte le porte al di sotto di 1024).
+Quando un processo client richiede una connessione, il calcolatore che lo ospita assegna una porta specifica (numero arbitrario maggiore di 1024).
+La consegna dei pacchetti al processo giusto avviene secondo il numero della porta di destinazione.
+La comunicazione tramite socket è considerata di basso livello, perchè permettono unicamente la trasmissione di un flusso non strutturato di byte.
+
+### 3.6.2 Chiamate di procedure remote
+I messaggi scambiati per la comunicazione RPC sono ben strutturati. Si indirizzano a un demone RPC, in ascolto su una porta del sistema remoto, e contengono un identificatore della funzione da eseguire e i parametri da passare a tale funzione.  Nel sistema remoto si esegue questa funzione e s'invia ogni risultato al richiedente in un messaggio distinto. La semantica delle RPC permette a un client di richiamare una procedura presente in un sistema remoto nello stesso odo i cui invocherebbe una procedura locale. Il sistema delle RPC nasconde i dettagli necessari. Un problema riguarda le differenze nella rappresentazione dei dati nel client e nel server. Per risolvere tali differenze molti sistemi di RPC definiscono una rappresentazione indipendente dalla macchina (external data representation, XDR).
+
+### 3.6.3 Pipe
+
+Una **pipe** agisce come un canale di trasmissione tra processi.
+Le **pipe convezionali** permettono a due processi di comunicare secondo una modalità standard chiamata produttore-consumatore. Il produttore scrive a una estremità, mentre il consumatore legge dall'altra, sono quindi unidirezionali. Non si può accedere a una pipe al di fuori del processo che la crea. Solitamente un processo padre crea una pipe per comunicare con il processo figlio, ne consegue che le pipe possono essere utilizzate soltato per la comunicazione tra processi in esecuzione sulla stessa macchina.
+
+Le **named pipe** costituiscono uno strumento di comunicazione molto più potente; la comunicazione può essere bidirezionale, e la relazione padre-figlio non è ecessaria. Una volta che si è creata la pipe, diversi processi possono utilizzarla per comunicare, inoltre, continuano ad esistere anche dopo che i processi comunicanti sono terminati.
 
 # Capitolo 4: Thread
 
