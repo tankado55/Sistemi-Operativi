@@ -362,3 +362,62 @@ Il tempo medio di attesa può variare grandemente all'aumentare della variabilit
 
 ### 6.3.2 Scheduling shortest-job-first
 
+to be continued...
+
+# Capitolo 8: Memoria centrale
+
+### 8.1.1 Hardware di base
+
+La memoria centrale e i registri icorporati el processore sono le sole aree di memorizzazione a cui la CPU può accedere direttamente.
+I registri incorporati nella CPU sono accessibili, in genere, nell'arco di un ciclo del clock della CPU.
+Ciò non vale per la memoria centrale, cui si accede tramite una transazione sul bus della memoria che può richiedere molti cicli di clock. In tal caso il processore entra necessariamente in **stallo**, pooichè manca dei dati richiesti per completare l'istruzione che sta eseguendo. Questa situazione è intollerabile, perchè gli accessi alla memoria sono frequenti. Il rimedio consiste nell'interposizione di una emoria veloce tra CPU e memoria centrale: la **cache**.
+
+Occorre anche assicurare una corretta esecuzione delle operazioni, a tal fine bisogna proteggere il sistema operativo dall'accesso dei rocessi utenti.
+Tale protezione deve essere messa in atto a livello hardware per questioni di prestazioni.
+Bisogna assicurarsi che ciascun processo abbia uno spazio di memoria separato, in modo da proteggere i processi l'uno dall'altro. Si può implementare il meccanismo di protezione tramite due registri, detti **registro base** e **registro limite**.
+Il registro base contiene il più piccolo indirizzo legale della memoria fisica; il registro limite determina la dimensione dell'intervallo ammesso.
+Per mettere in atto tale meccanismo la CPU confronta ciascun indirizzo generato in modalità utente con i valori contenuti dai due registri.
+Qualsiasi tentativo di accedere alle aree di memoria riservate al sistema operativo conporta l'invio di un eccezione che restituisce il controllo al sistema operativo.
+
+### 8.1.3 Spazi di indirizzi logici e fisici
+
+Un indirizzo generato dalla CPU è chiamato **indirizzo logico**, mentre un indirizzo visto dall'unità di memoria è detto **indirizzo fisico**.
+L'associazione nella fase d'esecuzione dagli indirizzi logici a fisici è svolta da un dispositivo detto **unità di gestione della memoria** (**MMU**): quando un processo genera un indirizzo, prima dell'invio all'unità di memoria, si somma a tale indirizzo il valore contenuto nel registro di rilocazione.
+
+### 8.1.4 Caricamento dinamico
+
+Per migliorare l'utilizzo della memoria si può ricorrere al **caricamento dinamico**, mediante il quale si carica in memoria centrale
+una procedura solo quando viene richiamata, è utile quando servono grandi quantità di codice per gestire casi non frequenti.
+
+### 8.1.5 Linking dinamico e librerie condivise
+
+Le librerie collegate dinamicamente sono librerie di sistema che vengono collegate ai programmi utente quando questi vengono eseguiti.
+Con il linking dinamico, per ogni riferimento a una procedura di libreria s'inserisce all'interno dell'eseguibile una piccola porzione di codice di riferimento (stub), che indica come localizzare la giusta procedura di libreria residente in memoria. Durante l'esecuzione lo stub controlla se la procedura richiesta è già in memoria,
+ altrimenti provvede a caricarla, in entrambi i casi sostituisce se stesso con l'indirizzo della procedura, inoltre in caso di aggiornamenti della libreria, tutti i programmi che fanno riferimento a quella libreria usano automaticamente la nuova versione.
+
+## 8.2 Avvicendamento dei processi (swapping)
+
+Un processo può essere temporaneamente tolto dalla memoria centrale e sospato in **memoria ausiliaria** e in seguito riportato in memoria per continuare l'esecuzione.
+Grazie allo swapping, lo spazio totale degli indirizzi fisici di tutti i processi può eccedere la reale dimensione della memoria fisica del sistema, aumentando cosi il grado di multiprogrammazione possibile.
+
+### 8.2.1 Avvicendamento standard
+
+Quando lo cheduler della CPU decide di eseguire un processo, richiama il dispatcher, che controlla se il primo processo della coda si trova in memoria centrale. Se non si trova in memoria, e in questa non c'è spazio libero, il dispatcher scarica un processo dalla memoria e vi carica il processo richiesto dallo scheduler CPU.
+Il tempo di cambio di contesto è piuttosto elevato. Per scaricare un processo dalla memoria è necessario essere ceti che sia completamente inattivo.
+
+### 8.3.2 Allocazione della memoria
+
+Uno dei metodi più semplici per l'allocazione della memoria consiste nel suddividere la stessa in **partizioni** di dimensione fissa.
+Nello schema a partizione variabile il sistema operativo conserva una tabella in cui sono indicate le partizioni di memoria disponibili e quelle occupate.
+Inizialment tutta la memoria è a disposizione dei processi. Nel lungo periodo, la memoria conterrà una serie di buchi di diverse dimensioni.
+I criteri più usati per sceglieere un buco libero tra quelli disponibili sono i seguenti:
+* **First-fit**: Si assegna il primo buco abbastanza grande.
+* **Best-fit**: Si assegna il più piccolo buco in grado di contenere il processo.
+* **Worst-fit**: Si assegna il buco più grande.
+
+### 8.3.3 Frammentazione
+
+Questi criteri dii allocazione soffrono di **frammentazione esterna**, che si ha quando lo spazio di memoria totale è sufficiente per soddisfare una richiesta, ma non è contiguo.
+La frammetazione è interna quando l'hoverhead necessario per tenere traccia di un buco è nettamente più grande del buco stesso (soluzione: suddividere la memoria fisica in blocchi di dimensione fissa).
+Una soluzione al problema della frammentazione esterna è la **compattazione**, tuttavia non è sempre possibile: non si può utilizzare se la rilocazione è statica ed è effettuata nella fase di assemblaggio o di caricamento.
+Un'altra possibile soluzione è data dal consentire la non contiguità dello spazio degli indirizzi logici di un processo.
