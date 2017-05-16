@@ -303,6 +303,29 @@ La soluzione è limitata a due processi e richiede che i processi condividano i 
 
 Le tecniche hardware si basano sul concetto dei **lock**, molte delle moderne architetture offrono particolari istruzioni che permettono di controllare e modificare il contenuto di una parola di memoria in modo atomico (`test_and_set()` e `compare_ad_swap()`).
 
+definizione di test_and_set()
+```c++
+boolean test_and_set(boolean *obiettivo){
+	boolean valore = *obiettivo;
+	*obiettivo = true;
+	return valore;
+}
+
+```
+Si può realizzare la mutua esclusione dichiarando una variabile booleana globale `lock` inizializzata a `false`.
+
+Realizzazione di mutua esclusione con test_and_set()
+```c++
+do {
+   while (test_and_set(&lock)); //cicla quando restituisce vero (significa che un altro processo concorrente è in sezione critica)
+   *sezione critica*
+   lok = false;
+   *sezione non critica*
+} while (true);
+
+```
+
+
 ## 5.5 Lock mutex
 
 Le soluzioni hardware al problema della sezione critica sono complicate e generalmente inaccessibili ai programmatori di applicazioni. In alternativa si implementano strumenti software come il **lock mutex**, in pratica il processo deve acquisire il lock prima di entrare in una sezione critica e rilasciarlo quando esce(acquire() e release()).
@@ -421,3 +444,16 @@ Questi criteri dii allocazione soffrono di **frammentazione esterna**, che si ha
 La frammetazione è interna quando l'hoverhead necessario per tenere traccia di un buco è nettamente più grande del buco stesso (soluzione: suddividere la memoria fisica in blocchi di dimensione fissa).
 Una soluzione al problema della frammentazione esterna è la **compattazione**, tuttavia non è sempre possibile: non si può utilizzare se la rilocazione è statica ed è effettuata nella fase di assemblaggio o di caricamento.
 Un'altra possibile soluzione è data dal consentire la non contiguità dello spazio degli indirizzi logici di un processo.
+
+## 8.4 Segmentazione
+
+La **segmentazione** è uno schema di gestione della memoria che supporta una rappresentazione della memoria dal punto di vista del programmatore.
+Uno spazio d'indirizzi logici è una raccolta di segmeti, ogni riferimento a un segmento si compie per mezzo di: <numero di segmento, offset>.
+Normalmente quando un programma viene compilato il compilatore costruisce automaticamete i segmenti in rapporto al programma sorgente, possono essere creati segmenti distiti per i seguenti elementi di un programma: il codice, le variabili globali, lo heap, gli stack usati da ciascun thread, la libreria stadard del C.
+
+### 8.4.2 Hardware di segmentazione
+
+Occorre tradurre gli idirizzi bidimensionali definiti dall'utente negli indirizzi fisici unidimensionali. Questa operazione si compie tramite una **tabella dei segmenti**, ogni suo elemento è una coppia ordinata: la base del segmento e il limite del segmento.
+Il numero di segmento si usa come indice per la tabella dei segmenti; l'offset d dell'indirizzo logico deve essere compreso tra 0 e il limite del segmento. Se la condizione dell'offset è rispettaata, questo viene sommato alla base del segmento per produrre l'indirizzo della memoria fisica dove si trova il byte desiderato.
+
+to be continued...
