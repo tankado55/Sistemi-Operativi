@@ -303,7 +303,7 @@ La soluzione è limitata a due processi e richiede che i processi condividano i 
 
 Le tecniche hardware si basano sul concetto dei **lock**, molte delle moderne architetture offrono particolari istruzioni che permettono di controllare e modificare il contenuto di una parola di memoria in modo atomico (`test_and_set()` e `compare_ad_swap()`).
 
-definizione di test_and_set()
+definizione di test_and_set():
 ```c++
 boolean test_and_set(boolean *obiettivo){
 	boolean valore = *obiettivo;
@@ -314,12 +314,12 @@ boolean test_and_set(boolean *obiettivo){
 ```
 Si può realizzare la mutua esclusione dichiarando una variabile booleana globale `lock` inizializzata a `false`.
 
-Realizzazione di mutua esclusione con test_and_set()
+Realizzazione di mutua esclusione con test_and_set() (rispetta solo mutua esclusione):
 ```c++
 do {
    while (test_and_set(&lock)); //cicla quando restituisce vero (significa che un altro processo concorrente è in sezione critica)
    *sezione critica*
-   lok = false;
+   lock = false;
    *sezione non critica*
 } while (true);
 
@@ -332,7 +332,7 @@ Le soluzioni hardware al problema della sezione critica sono complicate e genera
 Un lock mutex ha una variabile booleana`available` il cui valore indica se il lock è disponibile o meno, se il lock è disponibile la chiamata `acquire()` ha successo.
 ```c++
 acquire() {
-    while (!available
+    while (!available)
        ; //attesa attiva
     available = false;
 }
@@ -348,9 +348,21 @@ Il principale svantaggio è che richiede **attesa attiva** che spreca cicli di C
 
 Un **semaforo** è una variabile intera cui si può accedere solo tramite due operazioni atomiche predefinite: `wait()` e `signal()`.
 Si usa distinguere fra **semafori binari** (simili a lock mutex) e **semafori contatore** che trovano applicazione nel controllo dell'accesso a una data risorsa presente in un  numero finito di esemplari. Il semaforo è inizialmente impostato al numero di risorse disponibili, quando il semaforo è a 0 tutte le risorse sono occupate.
-Per superare la necessità dell'attesa attiva nelle definizioni: in `wait()` quando un processo trova il valore del semaforo non positivo invece di restare in attesa attiva può **bloccare** se stesso.
+
+Per superare la necessità dell'attesa attiva nella definizione di `wait()` quando un processo trova il valore del semaforo non positivo invece di restare in attesa attiva può **bloccare** se stesso.
 L'operazione di bloccaggio pone il processo in una coda d'attesa associata al semaforo e pone lo stato del processo a "waiting". Quindi si trasferisce il controllo allo scheduler della CPU che sceglie un altro processo pronto per l'esecuzione.
 Un processo bloccato verrà riavviato in seguito all'esecuzione di un operazione `signal()` da parte di qualche altro processo. Il proceso si riavvia tramite un operazione `wakeup()`, che modifica lo stato del processo da *waiting* a *ready*.
+
+
+Per realizzare i semafori in questo modo si può definire il semaforo come segue:
+
+```c++
+typefìdef struct {
+	  int value;
+	  struct process *list;
+} semaphore;
+
+```
 A ogni semaforo sono associati un valore intero (value) e una lista di processi (list), contenente i processi i attesa a un semaforo, l'operazione `signal()` preleva un processo da tale lista e lo attiva.
 
 Le operazioni sui semafori devono essere eseguite in modo atomico, in un contesto monoprocessore lo si può risolvere semplicemente inibendo le interruzioni durante l'esecuzione di signal() e wait(), mentre nei sistemi multiprocessore i sistei SMP devono mettere a disposizione altre tecniche come `compare_and_swap` e gli spinlock.
