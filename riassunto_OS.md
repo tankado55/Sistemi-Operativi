@@ -357,17 +357,130 @@ Un processo bloccato verrà riavviato in seguito all'esecuzione di un operazione
 Per realizzare i semafori in questo modo si può definire il semaforo come segue:
 
 ```c++
-typefìdef struct {
-	  int value;
-	  struct process *list;
+typedef struct {
+    int value;
+    struct process *list;
 } semaphore;
 
+wait(semaphore *S) {
+    S->value--;
+    if (S->value < 0) {
+        aggiungi questo processo a S->list;
+	block();
+    }
+}
+
+signal(semaphore *S) {
+    S->value++;
+    if (S->value <= 0) {  //se c'è qualcuno in attesa
+        togli un processo P da S->list;
+	wakeup(P);
+    }
+}
+
 ```
-A ogni semaforo sono associati un valore intero (value) e una lista di processi (list), contenente i processi i attesa a un semaforo, l'operazione `signal()` preleva un processo da tale lista e lo attiva.
+A ogni semaforo sono associati un valore intero (`value`) e una lista di processi (`list`), contenente i processi i attesa a un semaforo, l'operazione `signal()` preleva un processo da tale lista e lo attiva.
 
 Le operazioni sui semafori devono essere eseguite in modo atomico, in un contesto monoprocessore lo si può risolvere semplicemente inibendo le interruzioni durante l'esecuzione di signal() e wait(), mentre nei sistemi multiprocessore i sistei SMP devono mettere a disposizione altre tecniche come `compare_and_swap` e gli spinlock.
 
-La realizzazione di un semaforo con coda di attesa può condurre a una situazione di **stallo**
+La realizzazione di un semaforo con coda di attesa può condurre a una situazione di **stallo**.
+Un insieme di processi è in stallo se ciascun processo dell'insieme attende un evento che può essere causato solo da un altro processo dell'insieme. Inoltre ppossiamo avere **starvation** se i processi si aggiungono e si rimuovono dalla lista di attesa con criterio LIFO.
+
+Può accadere che un processo con priorità più bassa (L) ifluenzi il tempo che il processo H attenderà in attesa della risorsa R.
+Questo problema si risolve implementando un **protocollo di ereditarietà delle priorità**, secondo il quale tutti i processi che stanno accedendo a risorse di cui hanno
+bisogno processi con priorità maggiore ereditano la priorità  più alta finchè on finiscono di utilizzare le risorse (per non avere prelazione).
+
+## 5.7 Problemi tipici di sincronizzazione
+
+### 5.7.1 Produttore/consumatore con memoria limitata
+
+Strutture dati condivise:
+```c++
+int n;
+semaphore mutex = 1;  // garantisce la mutua esclusione degli accessi al buffer.
+semaphore empty = n;
+semaphore full = 0;
+```
+
+Processo produttore:
+```c++
+do {		
+   /* Produce un elemento in next_produced */
+   wait(empty);
+   wait(mutex);
+
+   /* inserisci nextproduced in buffer */
+
+   signal(mutex);
+   signal(full);
+} while (true);
+```
+
+Processo consumatore:
+```c++
+do {
+   wait(full);
+   wait(mutex));
+
+   /* rimuovi un elemento da buffer e mettilo in next_consumed */
+
+   signal(mutex);
+   signal(empty);
+
+/* cosuma l'elemento contenuto in ext_consumed*/
+
+} while (true);
+```
+
+### 5.7.2 Problema dei lettori-scrittori
+Il *primo* problema dei lettori-scrittori richiede che nessun lettore attenda, a meno che uno scrittore abbia già ottenuto il permesso di usare l'insieme di dati
+condiviso.
+
+La soluzione prevede le seguenti strutture dati condivise:
+```c++
+semaphore rw_mutex = 1;
+semaphore mutex = 1;
+int read_count = 0;
+```
+Il semaforo rw_mutex funziona come semaforo di mutua esclusione per gli scrittori e serve anche al primo e all'ultimo lettore che entra o esce dalla sezione critica.
+
+Processo scrittore:
+```c++
+do {
+   wait(rw_mutex);
+
+   /* esegui l'operazione di scrittura */
+
+   signal(rw_mutex);
+} while (true);
+```
+
+Processo lettore:
+```c++
+do {
+   wait(mutex)
+   read_count++;
+   if (read_count == 1)
+      wait(rw_mutex);
+   signal(mutex);
+
+   /* esegue l'operazione di lettura */
+
+   wait(mutex);
+   readcount--;
+   if (read_count == 0)
+      signal(rw_mutex);
+   signal(mutex);
+} while (true);
+```
+
+Se uno scrittore si trova nella sezione critica e n lettori attendono di entrarvi, si accoda un lettoe a rw_mutex e n-1 lettori a mutex.
+Inoltre, se uno scrittore esegue signal(rw_mutex) si può riprendere l'esecuzionw dei lettori in attesa, oppure di un singolo scrittore in attesa.
+La scelta è fatta dallo scheduler.
+
+
+
+
 
 
 to be continued...
