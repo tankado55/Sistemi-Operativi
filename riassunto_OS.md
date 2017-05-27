@@ -294,6 +294,7 @@ Una soluzione del problema della sezione critica deve soddisfare i tre requisiti
 In un dato momento numerosi processi in modalità kernel possono essere attivi. Se ciò si verifica, il **codice del kernel** è soggetto a **race codition**. Strutture dati dal kernel soggette a questo problema possono essere quelle per l'alloczione della memoria, per la gestione delle interruzioni o le liste dei processi. Le due strategie principali per la gestione delle sezioni critiche nei sistemi operativi sono: **kernel con diritto di prelazione** e ** kernel senza diritto di prelazione. i primi sono immuni a race condition sulle strutture dati del kernel ma i kernel con diritto di prelazione possono vantare di una maggiore prontezza nelle risposte, inoltre sono più adatti alla programmazione real-time.
 
 ## 5.3 Soluzione di Peterson
+
 é una soluzione software. A causa del modo in cui i moderni elaboratori eseguono le istruzioni elementari del linguaggio macchina, non è affatto certo che la soluzione di Peterson funzioni correttamente (scopo didattico).
 
 La soluzione è limitata a due processi e richiede che i processi condividano i seguenti dati `int turn;` e `boolean flag[2];`, la variabile turn segnala, di chi sia il turno per l'accesso alla sezione critica mentre l'array flag, indica se un processo sia pronto a entrare nella sezione crtica.
@@ -433,6 +434,7 @@ do {
 ```
 
 ### 5.7.2 Problema dei lettori-scrittori
+
 Il *primo* problema dei lettori-scrittori richiede che nessun lettore attenda, a meno che uno scrittore abbia già ottenuto il permesso di usare l'insieme di dati
 condiviso.
 
@@ -478,6 +480,19 @@ Se uno scrittore si trova nella sezione critica e n lettori attendono di entrarv
 Inoltre, se uno scrittore esegue signal(rw_mutex) si può riprendere l'esecuzionw dei lettori in attesa, oppure di un singolo scrittore in attesa.
 La scelta è fatta dallo scheduler.
 
+### 5.7.3 Problema dei cinque filosofi
+
+Una semplica soluzione consiste ne rappresentare ogni bacchetta con un semaforo. Questa soluzione garantisce che due vicini non mangino contemporaneamente, ma è insufficiente poichè non esclude la possibilità che si abbia una situazione di stallo.
+
+Possibili soluzioni:
+* un filosofo può prendere le sue bacchette solo se sono entrambe disponibili (in sezione critica)
+* si adotta una soluzione simmetrica
+
+##5.8 Monitor
+
+è un costrutto fondamentale di sincronizzazione di alto livello.
+Il monitor è un ADT che comprende un insieme di operazioni definite dal programmatore che, sono contraddistinte dalla mutua esclusione.
+
 
 
 
@@ -489,7 +504,8 @@ to be continued...
 
 Lo scheduler può essere **con prelazione** e **senza prelazione** (quando si assegna la CPU a un processo, questo rimane in possesso della CPU fino al momento del suo rilascio dovuto al termine dell'esecuzione o al passaggio allo stato di attesa. Lo scheduling con prelazione può portare a race condition.
 
-Un elemento coinvolto nella funzione di scheduling della CPU è il **dispatcher**, si ctratta del modulo che passa effettivamente il controllo della CPU al processo scelto dallo scheduler a breve termine.
+Un elemento coinvolto nella funzione di scheduling della CPU è il **dispatcher**, si ctratta del modulo che passa effettivamente il controllo della CPU al processo
+scelto dallo scheduler a breve termine.
 
 ## 6.2 Criteri di scheuling
 
@@ -516,16 +532,17 @@ to be continued...
 
 ### 8.1.1 Hardware di base
 
-La memoria centrale e i registri icorporati el processore sono le sole aree di memorizzazione a cui la CPU può accedere direttamente.
+La memoria centrale e i registri incorporati nel processore sono le sole aree di memorizzazione a cui la CPU può accedere direttamente.
 I registri incorporati nella CPU sono accessibili, in genere, nell'arco di un ciclo del clock della CPU.
-Ciò non vale per la memoria centrale, cui si accede tramite una transazione sul bus della memoria che può richiedere molti cicli di clock. In tal caso il processore entra necessariamente in **stallo**, pooichè manca dei dati richiesti per completare l'istruzione che sta eseguendo. Questa situazione è intollerabile, perchè gli accessi alla memoria sono frequenti. Il rimedio consiste nell'interposizione di una emoria veloce tra CPU e memoria centrale: la **cache**.
+Ciò non vale per la memoria centrale, cui si accede tramite una transazione sul bus della memoria che può richiedere molti cicli di clock.
+In tal caso il processore entra necessariamente in **stallo**, poichè manca dei dati richiesti per completare l'istruzione che sta eseguendo. Questa situazione è intollerabile, perchè gli accessi alla memoria sono frequenti. Il rimedio consiste nell'interposizione di una emoria veloce tra CPU e memoria centrale: la **cache**.
 
-Occorre anche assicurare una corretta esecuzione delle operazioni, a tal fine bisogna proteggere il sistema operativo dall'accesso dei rocessi utenti.
+Occorre anche assicurare una corretta esecuzione delle operazioni, a tal fine bisogna proteggere il sistema operativo dall'accesso dei processi utenti.
 Tale protezione deve essere messa in atto a livello hardware per questioni di prestazioni.
 Bisogna assicurarsi che ciascun processo abbia uno spazio di memoria separato, in modo da proteggere i processi l'uno dall'altro. Si può implementare il meccanismo di protezione tramite due registri, detti **registro base** e **registro limite**.
 Il registro base contiene il più piccolo indirizzo legale della memoria fisica; il registro limite determina la dimensione dell'intervallo ammesso.
 Per mettere in atto tale meccanismo la CPU confronta ciascun indirizzo generato in modalità utente con i valori contenuti dai due registri.
-Qualsiasi tentativo di accedere alle aree di memoria riservate al sistema operativo conporta l'invio di un eccezione che restituisce il controllo al sistema operativo.
+Qualsiasi tentativo di accedere alle aree di memoria riservate al sistema operativo comporta l'invio di un eccezione che restituisce il controllo al sistema operativo.
 
 ### 8.1.3 Spazi di indirizzi logici e fisici
 
@@ -540,8 +557,10 @@ una procedura solo quando viene richiamata, è utile quando servono grandi quant
 ### 8.1.5 Linking dinamico e librerie condivise
 
 Le librerie collegate dinamicamente sono librerie di sistema che vengono collegate ai programmi utente quando questi vengono eseguiti.
-Con il linking dinamico, per ogni riferimento a una procedura di libreria s'inserisce all'interno dell'eseguibile una piccola porzione di codice di riferimento (stub), che indica come localizzare la giusta procedura di libreria residente in memoria. Durante l'esecuzione lo stub controlla se la procedura richiesta è già in memoria,
- altrimenti provvede a caricarla, in entrambi i casi sostituisce se stesso con l'indirizzo della procedura, inoltre in caso di aggiornamenti della libreria, tutti i programmi che fanno riferimento a quella libreria usano automaticamente la nuova versione.
+Con il linking dinamico, per ogni riferimento a una procedura di libreria s'inserisce all'interno dell'eseguibile una piccola porzione di codice di riferimento (stub),
+che indica come localizzare la giusta procedura di libreria residente in memoria. Durante l'esecuzione lo stub controlla se la procedura richiesta è già in memoria,
+altrimenti provvede a caricarla, in entrambi i casi sostituisce se stesso con l'indirizzo della procedura,
+inoltre in caso di aggiornamenti della libreria, tutti i programmi che fanno riferimento a quella libreria usano automaticamente la nuova versione.
 
 ## 8.2 Avvicendamento dei processi (swapping)
 
@@ -573,12 +592,62 @@ Un'altra possibile soluzione è data dal consentire la non contiguità dello spa
 ## 8.4 Segmentazione
 
 La **segmentazione** è uno schema di gestione della memoria che supporta una rappresentazione della memoria dal punto di vista del programmatore.
-Uno spazio d'indirizzi logici è una raccolta di segmeti, ogni riferimento a un segmento si compie per mezzo di: <numero di segmento, offset>.
-Normalmente quando un programma viene compilato il compilatore costruisce automaticamete i segmenti in rapporto al programma sorgente, possono essere creati segmenti distiti per i seguenti elementi di un programma: il codice, le variabili globali, lo heap, gli stack usati da ciascun thread, la libreria stadard del C.
+Uno spazio d'indirizzi logici è una raccolta di segmenti, ogni riferimento a un segmento si compie per mezzo di: <numero di segmento, offset>.
+Normalmente quando un programma viene compilato il compilatore costruisce automaticamete i segmenti in rapporto al programma sorgente,
+possono essere creati segmenti distiti per i seguenti elementi di un programma:
+il codice, le variabili globali, lo heap, gli stack usati da ciascun thread, la libreria standard del C.
 
 ### 8.4.2 Hardware di segmentazione
 
-Occorre tradurre gli idirizzi bidimensionali definiti dall'utente negli indirizzi fisici unidimensionali. Questa operazione si compie tramite una **tabella dei segmenti**, ogni suo elemento è una coppia ordinata: la base del segmento e il limite del segmento.
-Il numero di segmento si usa come indice per la tabella dei segmenti; l'offset d dell'indirizzo logico deve essere compreso tra 0 e il limite del segmento. Se la condizione dell'offset è rispettaata, questo viene sommato alla base del segmento per produrre l'indirizzo della memoria fisica dove si trova il byte desiderato.
+Occorre tradurre gli idirizzi bidimensionali definiti dall'utente negli indirizzi fisici unidimensionali.
+Questa operazione si compie tramite una **tabella dei segmenti**, ogni suo elemento è una coppia ordinata: la base del segmento e il limite del segmento.
+Il numero di segmento si usa come indice per la tabella dei segmenti; l'offset d dell'indirizzo logico deve essere compreso tra 0 e il limite del segmento. Se la condizione dell'offset è rispettata, questo viene sommato alla base del segmento per produrre l'indirizzo della memoria fisica dove si trova il byte desiderato.
+
+## 8.5 Paginazione
+
+La segmentazione permette che lo spazio degli indirizzi fisici di un processo non sia contiguo. La **paginazione** è un altro schema di gestione della memoria che offre lo stesso vantaggio. A differenza della segmentazione evita la frammentazione esterna e la necessità di compattazione.
+L'implementazione della paginazione è frutto della collaborazione tra il sistema operativo e l'hardware del computer.
+
+### 8.5.1 Metodo di base
+
+L'implementazione consiste nel suddividere la memoria fisica in blocchi di dimensione fissa, detti **frame**, e nel suddividere la memoria logica in blocchi di pari dimensione, detti **pagine**.
+Ogni indirizzo generato dalla CPU è diviso in due parti: un **numero di pagina**, e un **offset di pagina**. Il numero di pagina serve come indice per la
+**tabella delle pagine**, contenente l'indirizzo di base in memoria fisica di ogni pagina.
+Questo indirizzo di base si combina con l'offset di pagina per definire l'indirizzo della memoria fisica.
+La dimensione di una pagina è, in genere, una potenza di 2 compresa tra 512 byte e 1 GB.
+Con la paginazione si evita la frammentazione esterna: infatti qualsiasi frame libero si può assegnare a un processo che ne abbia bisogno.
+Potrebbe esserci frammentazione interna in quanto lo spazio richiesto da un processo in  generale non è multiplo della dimensione della pagine.
+Quindi, in teoria, conviene usare pagine piccole ma a ogni elemento della tabella delle pagine è associato un hoverhead che si riduce all'aumentare delle dimensioni delle pagine. La dimensione tipica è compresa tra i 4KB e 8KB.
+Un aspetto importante della paginazione è la netta distinzione tra la memoria vista dal programmatore e l'effettiva memoria fisica, in quanto, il programma utente potrebbe essere sparso in memoria fisica. La differenza è colmata dall'hardware di traduzione degli indirizzi.
+
+### 8.5.2 Supporto hardware alla paginazione
+
+L'implementazione hardware della tabella delle pagine si può realizzare in modi diversi. Nel caso più semplice, si usa un insieme di registri.
+Ma in genere i calcolatori usano tabelle troppo grandi. quindi vengono mantenute in memoria principalle e un **registro di base della tabella delle pagine** punta alla tabella stessa.
+Con questo metodo però per accedere a un byte occorrono due accessi in memoria (uno per l'elemento della tabella e uno per il byte stesso).
+La soluzione a questo problema consiste nell'impiego di una speciale, piccola cache hardware, detta **TLB**(translation look-aside buffer).
+La TLB è una memoria associativa ad alta velocità in cui ogni elemento consiste in due parti: una chiave e un valore.
+La ricerca è molto rapida e in un hardware moderno è parte della pipeline.
+Si usa insieme con la tabella delle pagine nel modo seguente: la TLB contiene una piccola parte degli elementi della tabella delle pagine; quando la CPU genera un indirizzo logico, si presenta il suo numero di pagina alla TLB, se è presente, tale frame è immediatamente disponibile. Se non è presente (**insuccesso della TLB** TLB miss), si deve consultare la tabella delle pagine in memoria. Inoltre i numeri della pagina e del frame vengono inseriti nella TLB, e al riferimento successivo la ricerca sarà molto più rapida.
+Per calcolare il **tempo effettivo d'accesso alla memoria** occorre tener conto della probabilità dei due casi.
+
+### 8.5.3 Protezione
+
+La protezione della memoria è assicuata dai bit di protezione associati a ogni frame, tali bit si trovano nella tabella delle pagine e possono determinare se una pagina si può leggere e scrivere o leggere soltanto ecc.
+Di solito si associa a ciascun elementeo della tabella delle pagine un ulteriore bit (**bit di validità**), se impostato a valido indica che la pagina corrispondente è nello spazio d'indirizzi logici del processo.
+
+### 8.5.4 Pagine condivise
+
+Un ulteriore vantaggio della paginazione consiste nella possibilità di condividere codice comune.
+Per essere condivisibile il codice deve essere **codice rientrante**, cioè che non cambia durante l'esecuzione.
+
+## 8.6 Struttura della tabella delle pagine
+
+### 8.6.1 Paginazione gerarchica
+
+Nella maggior parte dei moderni calcolatori la tabella delle pagine diventa eccessivamente grande, quindi si adotta un algoritmo di paginazione a due livelli, in cui la tabella stessa è paginata.
+
+
+
 
 to be continued...
