@@ -248,6 +248,7 @@ Le **pipe convezionali** permettono a due processi di comunicare secondo una mod
 
 Le **named pipe** costituiscono uno strumento di comunicazione molto più potente; la comunicazione può essere bidirezionale, e la relazione padre-figlio non è ecessaria. Una volta che si è creata la pipe, diversi processi possono utilizzarla per comunicare, inoltre, continuano ad esistere anche dopo che i processi comunicanti sono terminati.
 
+
 # Capitolo 4: Thread
 
 Un thread è l'unità di base d'uso della CPU, un processo multithread è in grado di svolgere più compiti in modo concorrente.
@@ -646,6 +647,40 @@ Per essere condivisibile il codice deve essere **codice rientrante**, cioè che 
 ### 8.6.1 Paginazione gerarchica
 
 Nella maggior parte dei moderni calcolatori la tabella delle pagine diventa eccessivamente grande, quindi si adotta un algoritmo di paginazione a due livelli, in cui la tabella stessa è paginata.
+
+# Capitolo 9: Memoria virtuale
+
+In molti casi non è necessario avere in memoria l'intero programma.
+La **memoria virtuale** è una tecnica che permette di eseguire processi che possono anche non essere completamente contenuti in meoria. 
+Il vantaggio principale è quello di permettere che i programmi siano più grandi della memoria fisica.
+Permette inoltre ai processi di condividere facilmente file e di realizzare memorie condivise.
+
+## 9.2 Paginazione su richiesta
+
+è necessario che l'hardware fornisca un meccanismo che consenta di distinguere le pagine presenti in meoria da quelle nei dischi.
+A tal fine è utilizzabile lo schema basato sul bit di validità. Il bit impostato come valido significa che la pagina è valida e presente in memoria.
+
+L'accesso a una pagina contrassegnata come non valida causa un evento di **page fault**.
+
+Procedure di gestione dell'eccezione:
+1. Si controlla una tabella interna per questo processo  per stabilire se fosse un accesso valido.
+2. Se valido ma la pagina non è ancora in memoria, se ne effettua il caricamento.
+3. Si individua un frame libero.
+4. Si carica la pagina.
+5. Si modifica la tabella interna del processo e la tabella delle pagine per indicare che la pagina si trova in memoria.
+6. Si riavvia l'istruzione interrotta dall'eccezione.
+
+La difficoltà maggiore si presenta quando un istruzione può modificare parecchie locazioni diverse, in quanto si può verificare un page fault quando lo spostamento è stato effettuato solo in parte.
+Si può risolvere esegueno un microcodice che tenti di accedere prima alle estremità delle sequenze di byte per verificare che siano in memoria. Oppure si possono utilizzare alcuni registri temporanei per coservare i valori delle locazioni sovrascritte e nel caso di un page fault, si riscrivono i vecchi valori.
+
+# 9.3 Copiatura su scrittura
+
+La tecnica del **copy-on write** si fonda sulla condivisione iniziale da parte dei processi genitori e dei processi figli.
+Le pagine condivise si contrassegnano come pagine da copiatura su scrittura, quindi, se un processo scrive su una pagina condivisa, il sistema deve creare una copia di tale pagina.
+
+
+
+
 
 
 
