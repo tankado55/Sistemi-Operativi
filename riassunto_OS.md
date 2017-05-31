@@ -673,15 +673,62 @@ Procedure di gestione dell'eccezione:
 La difficoltà maggiore si presenta quando un istruzione può modificare parecchie locazioni diverse, in quanto si può verificare un page fault quando lo spostamento è stato effettuato solo in parte.
 Si può risolvere esegueno un microcodice che tenti di accedere prima alle estremità delle sequenze di byte per verificare che siano in memoria. Oppure si possono utilizzare alcuni registri temporanei per coservare i valori delle locazioni sovrascritte e nel caso di un page fault, si riscrivono i vecchi valori.
 
-# 9.3 Copiatura su scrittura
+## 9.3 Copiatura su scrittura
 
 La tecnica del **copy-on write** si fonda sulla condivisione iniziale da parte dei processi genitori e dei processi figli.
 Le pagine condivise si contrassegnano come pagine da copiatura su scrittura, quindi, se un processo scrive su una pagina condivisa, il sistema deve creare una copia di tale pagina.
 
+## 9.4 Sostituzione delle pagine
+
+Si ha **sovrallocazione** quando, verificandosi un page fault, la lista dei frame liberi e vuota, quindi tutta la memoria è in uso.
+
+### 9.4.1 Sostituzione di pagina
+
+Quando nessun frame è libero, occorre liberarne uno attualmente utilizzato. é possibile liberarlo scrivendo il suo contenuto nell'area di swap e modificando la tabella delle pagine per indicare che la pagina non si trova più in memoria.
+In questo caso sono necessari 2 trasferimenti di pagine, uno dentro e uno fuori la memoria.
+Questo overhead si può ridurre usando un **bit di modifica** che viene posto a 1 ogni qual volta che la pagina viene modificata. Se è a 1 la pgina deve essere scritta su disco. Se è a 0 non c'è bisogno, c'è già.
+
+Per realizzare la paginazione su richiesta è necessario risolvere due problemi principali: occorre sviluppare un **algoritmo di allocazione dei frame** e un **algoritmo di sostituzione delle pagine**. Ossia: occorre decidere quanti frame vadano assegnati a ciascun processo. Inoltre, quando è richiesta la sostituzione di pagina, occorre selezionare i frame da sostituire.
+La progettazione di algoritmi idonei è un compito importante, poichè l'I/O dei dischi è molto oneroso.
+
+### 9.4.2 Sostituzione delle pagine secondo FIFO
+
+L'algoritmo più semplice è un algoritmo FIFO.
+Le prestazioni non sono sempre buone, inoltre potrebbe verificarsi l'**anomalia di Belady** secondo la quale aumentando il numero di frame disponibili in alcuni casi il tasso di page fault potrebbe aumentare.
 
 
+### 9.4.3 Sostituzione ottimale delle pagine
 
+Consiste nel sostituire la pagina che non verrà usata per il periodo di tempo più lungo, rihiede la conoscenza futura, quini è utilizzato solamente per studi comparativi.
 
+### 9.4.4 Sostituzione delle pagine usate meno recentemente (LRU)
+
+Si sostituisce la pagina che non è stata usata per il periodo più lungo (least recent used).
+Necessita di associare a ogni pagina l'istante in cui è stata usata per l'ultima volta.
+Il criterio LRU si usa spesso come algoritm di sostituzione. Il problema principale riguarda la sua implementazione.
+Si può realizzare con:
+* **contatori**: implica una ricerca all'interno della tabella delle pagine per individuare la pagina usata meno recentemente, e una scrittura in memoria per ogni accesso alla memoria.
+* **Stack**: Ogni volta che si fa un riferimento a una pagina, la si estrae dallo stack e la si colloca in cima a quest'ultimo. Ogni aggiornamento è un po più costoso ma non si deve compiere alcuna ricerca.
+
+Entrambe le implementazioni sono possibili solo tramite un supporto hardware. 
+
+### 9.4.5 Sostituzion delle pagine per approssimazione a LRU
+
+Sono pochi i sistemi di calcolo che dispongono del supporto hardware per una vera sostituzione LRU.
+Molti sistemi tuttavia possono fornire un aiuto: un **bit di riferimento**.
+
+#### Agoritmo con bit supplementari di riferimento
+
+Ulteriori informazioni sull'ordinamento si possono ottenere registrando i bit di riferimento a intervalli regolari, ad esempio conservando lo stato in una tabella da un byte per pagina a intervalli di 100 ms, salvando nel bit più significativo del byte  e shiftando gli altri a destra.
+
+#### Algoritmo con seconda chance (orologio)
+
+Si basa su un algoritmo FIFO, tuttavia, dopo aver selezionato una pagina, si controlla il bit di riferimento, se è 0, viene sostituita, se è 1 si dà una seconda chance e si passa alla successiva.
+L'implementazione si basa sull'uso di una coda circolare. Nel caso peggiore, quando tutti i bit sono impostati a 1, il puntatore percorre un ciclo su tutta la coda.
+
+#### Algoritmo a seconda chance migliorato
+
+l'algoritmo si può migliorare, considerando oltre al bit di riferimento, anche quello di modifica, la differenza è che si da a preferenza a restae in memoria alle pagine modificate, al fine di ridurre il numero di I/O richiesti.
 
 
 
