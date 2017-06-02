@@ -730,6 +730,37 @@ L'implementazione si basa sull'uso di una coda circolare. Nel caso peggiore, qua
 
 l'algoritmo si può migliorare, considerando oltre al bit di riferimento, anche quello di modifica, la differenza è che si da a preferenza a restae in memoria alle pagine modificate, al fine di ridurre il numero di I/O richiesti.
 
+## 9.5 Allocazione dei frame
+
+le strategie di allocazione dei fame sono soggette a parecchi vincoli. è necessario assegnare almeno un numero miimo di frame, perchè quando si verifica un page fault prima che sia stata completata l'esecuzione di un'istruzione, quest'ultima deve essere riavviata. Di conseguenza, i frame disponibili devono essere in numero sufficiente per contenere tutte le pagine cui ogni singola istruzione può far riferimento. Il numero minimo di frame per ciascun processo è definito dall'architettura.
+
+### 9.5.2 Algoritmi di allocazione
+
+Il modo più semplice è quello per cui a ciascun processo si da una parte uguale di frame (**allocazione uniforme**).
+Un alternativa consiste nell'**allocazione proporzionale** secondo cui la memoria disponibile si assegna a ciascun processo secondo la propria dimensione.
+
+### 9.5.3 Allocazione globale e allocazione locale
+
+Gli algoritmi di sostituzione delle pagine si possono classificare in due categorie generali:
+* **sostituzione globale**: permette he per un processo si scelga un frame per la sostituzione dall'insieme di tutti i frame, anche se qual frame è al momento allocato a un altro processo.
+* **sostituzione locale**: richeide che per un processo si scelga un frame solo dal proprio insieme di frame.
+
+Quello globale permette a un processo ad alta priorità di aumentare il proprio livello di allocazione dei frame a discapito dei processi a bassa priorità. Questo algoritmo risente di un problema: un processo non può controllare il proprio tasso di page fault, lo stesso processo può comportarsi in modi del tutto diversi, a causa di circostanze del tutto esterne.
+
+## 9.6 Thrashing
+
+Un processo in thrashing spende più tempo per la paginazione  che per l'esecuzione dei processi.
+
+### 9.6.1 Cause del thrashing
+
+Il thrashing causa notevoli problemi di prestazioni.
+Aumentando il grado di multiprogrammazione aumenta anche l'utilizzo della CPU, fino a raggiungere un massimo. Se a questo punto si aumenta ulteriormente il grado di multiprogrammazione, l'attività di paginazione degenera e fa crollare l'utilizzo della CPU. Per bloccare il thrashing occorre ridurre il grado di multiprogrammazione.
+Questa situazione si può limitare usando un algoitmo di sostituzione locale, o algoritmo di sostituzione con priorità. In questo modo un processo non può provocarne la degenerazione di un altro ma il problema non è completamente risolto in quanto i processi che rimangono i thrashing occupano la coda del dispositivo di paginazione, di conseguenza il tempo di accesso in memoria aumenta anche per gli altri. Per evitare queste situazioni occorre fornire al processo tutti i frame di cui necessita. Per fae ciò occorre osservare quanti sono i frame che un processo sta effettivamente usando.
+Questo approccio definisce il **modello di località**.
+Per esempio quando si invoca una procedura, essa definisce una nuova località.
+Quindi supponendo di  allocare a un processo un numero di frame sufficiente per sistemare le sue località attuali, finchè le località non vengano modificate, non hanno luogo altri page fault.
+ In caso contrario la paginazione del processo degenera. 
+
 
 
 to be continued...
