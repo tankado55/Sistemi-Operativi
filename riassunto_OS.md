@@ -529,6 +529,61 @@ Il tempo medio di attesa può variare grandemente all'aumentare della variabilit
 
 to be continued...
 
+# Capitolo 7: Stallo dei processi
+
+Un insieme di processi è in stallo se ciascun processo dell'insieme attende un evento che può essere causato solo da un altro processo dell'insieme.
+
+## 7.2 Caratteristiche della situazione di stallo
+Si può avere una situazione di stallo solo se in un sistema si verificano contemporaneamente le seguenti quattro condizioni:
+1. **Mutua esclusione**
+2. **Possesso e attesa**
+3. **Assenza di prelazione**
+4. **Attesa circolare**
+
+### 7.2.2 Grafo di assegnazione delle risorse
+
+Le situazioni di stallo si possono descrivere avvalendosi di un **grafo di assegnazione delle risorse**. Se il grafo non contiene cicli, nessun processo del sistema subisce uno stallo, se il grafo contiene un ciclo, potrebbe esserci uno stallo.
+Se ciascun tipo di risorsa ha esattamente un'istanza, allora l'esistenza di un ciclo implica la presenza di uno stallo.
+
+## 7.3 Metodi per la gestione delle situazioni di stallo
+
+Il problema delle situazioni di stallo si può affrontare in tre modi:
+* si può usare un protocollo per prevenire o evitare le situazioni di stallo, assicurando che il sistema non entri mai in stallo.
+* si può permettere al sitema di entrare i stallo, individuarlo, e quindi eseguire il riprstino.
+* si può ignorare del tutto il problema, fingendo che le situazioni di stallo non possano mai verificarsi.
+
+Quest'ultima è la soluzione utilizzata dalla maggior parte dei sistemi operativi. Quindi diveta un problema dei programmatori degli applicativi.
+
+## 7.4 Prevenire le situazioni di stallo
+
+Si può prevenire il verificarsi di uno stallo assicurando che almento una delle 4 condizioni non si verifichi.
+
+### 7.4.2 Possesso e attesa
+
+Si può usare un protocollo che ponga la condizione che ogni processo, prima di iniziare la propria esecuzione, richieda tutte le risorse che gli servono.
+Un protocollo alternativo è quello che permette a un processo di richiedere risorse solo se non ne possiede: un processo può richiedere risorse e adoperarle, ma prima di richiedere ulteriori risorse deve rilasciare tutte quelle che possiede. Entrambi i procololli presentano degli svantaggi.
+
+### 7.4.3 Assenza di prelazione
+
+Il protocollo da applicare per assicurarsi che questa condizione non sussista prevede che se un processo possiede una o più risorse e ne richiede un altra che non gli si può assegnare immediatamente, allora si esercita la prelazione su tutte le risorse attualmente in suo possesso.
+
+### 7.4.4 Attesa circolare
+Un modo per assicurare che tale condizione d'attesa non si verifichi consiste nell'imporre un ordinamento totale all'insieme dei tipi di risorse e imporre che ciascun processo richieda le risorse in ordine crescente.
+
+## 7.5 Evitare le situazioi di stallo
+
+Un metodo per evitare situazioni di stallo consiste nel richiedere ulteriori informazioni sulle modalità di richiesta delle risorse.
+
+Uno stato si dice **sicuro** se il sistema è in grado di assegnare risorse a ciascun processo in un certo ordine e impedire il verificarsi di uno stallo.
+
+
+
+
+
+
+
+
+
 # Capitolo 8: Memoria centrale
 
 ### 8.1.1 Hardware di base
@@ -754,12 +809,25 @@ Un processo in thrashing spende più tempo per la paginazione  che per l'esecuzi
 ### 9.6.1 Cause del thrashing
 
 Il thrashing causa notevoli problemi di prestazioni.
-Aumentando il grado di multiprogrammazione aumenta anche l'utilizzo della CPU, fino a raggiungere un massimo. Se a questo punto si aumenta ulteriormente il grado di multiprogrammazione, l'attività di paginazione degenera e fa crollare l'utilizzo della CPU. Per bloccare il thrashing occorre ridurre il grado di multiprogrammazione.
-Questa situazione si può limitare usando un algoitmo di sostituzione locale, o algoritmo di sostituzione con priorità. In questo modo un processo non può provocarne la degenerazione di un altro ma il problema non è completamente risolto in quanto i processi che rimangono i thrashing occupano la coda del dispositivo di paginazione, di conseguenza il tempo di accesso in memoria aumenta anche per gli altri. Per evitare queste situazioni occorre fornire al processo tutti i frame di cui necessita. Per fae ciò occorre osservare quanti sono i frame che un processo sta effettivamente usando.
+Aumentando il grado di multiprogrammazione aumenta anche l'utilizzo della CPU, fino a raggiungere un massimo. Se a questo punto si aumenta ulteriormente il grado di multiprogrammazione, l'attività di paginazione degenera e fa crollare l'utilizzo della CPU.
+
+Per bloccare il thrashing occorre ridurre il grado di multiprogrammazione.
+Questa situazione si può limitare usando un algoitmo di sostituzione locale, o algoritmo di sostituzione con priorità. In questo modo un processo non può provocarne la degenerazione di un altro ma il problema non è completamente risolto in quanto i processi che rimangono i thrashing occupano la coda del dispositivo di paginazione, di conseguenza il tempo di accesso in memoria aumenta anche per gli altri. Per evitare queste situazioni occorre fornire al processo tutti i frame di cui necessita. Per far ciò occorre osservare quanti sono i frame che un processo sta effettivamente usando.
 Questo approccio definisce il **modello di località**.
 Per esempio quando si invoca una procedura, essa definisce una nuova località.
 Quindi supponendo di  allocare a un processo un numero di frame sufficiente per sistemare le sue località attuali, finchè le località non vengano modificate, non hanno luogo altri page fault.
  In caso contrario la paginazione del processo degenera. 
+
+### 9.6.2 Modello del working set
+
+Il **modello del working set** è basato sull'ipotesi di località. Usa un parametro (delta), per definire la **finestra del working set**. Se una pagina è in uso attivo si trova nel working set.
+La caratteristica più importante è la sua dimensione. Il sistema operativo controlla il working set di ogni processo e gli assegna un numero di frame sufficiente. Se la somma totale dei working set supera il numero totale di frame disponnibili, il sistema operativo individua un processo da sospenere e assegna i suoi frame ad altri processi.
+Questa strategia impedisce il trashing, mantenendo il grado di multiprogrammazioen più alto possibile.
+
+## 9.6.3 Frequenza dei page fault
+
+La strategia basata sulla **frequenza dei page fault** è più diretta.
+Consiste nel fissare un limite inferiore e un limmite superiore per la frequenza desiderata dei page fault. Se la frequenza oltrepassa i limiti, il sistema agirà di conseguenza.
 
 
 
