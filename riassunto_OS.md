@@ -576,6 +576,51 @@ Un metodo per evitare situazioni di stallo consiste nel richiedere ulteriori inf
 
 Uno stato si dice **sicuro** se il sistema è in grado di assegnare risorse a ciascun processo in un certo ordine e impedire il verificarsi di uno stallo.
 
+### 7.5.3 Algoritmo del banchiere
+
+Quando si presenta al sistema, un nuovo processo deve dichiarare il numero massimo delle istanze di ciascun tipo di risorsa di cui potrà aver bisogno.
+Quando un utente richiede un gruppo di risorse, si deve stabilire se l'assegnazione di queste risorse lasci il sistema in uno stato sicuro. Se si rispetta tale condizione, si assegnano le risorse.
+Si simula l'assegnazione al processo delle risorse, se lo stato risultante è sicuro, la transazione è completata, in caso contrario si ripristina il vecchio stato.
+
+## 7.6 Rilevamento delle situazioni di stallo
+
+Se un sistema non si avvale di un algoritmo per prevenire o evitare lo stallo, il sistema può offrire i seguenti algoritmi:
+* Un algoritmo che esamini lo stato del sistema per stabilire se si è verificato uno stallo;
+* Un algoritmo che ripristini il sistema dalla condizione di stallo.
+Lo schema di rilevamento e di ripristino richiede un overhead che include non solo i costi necessari per l'esecuzione dell'algoritmo di rilevamento, ma anche i potenziali costi dovuti alle perdite di
+informazioni connesse al ripristino da una situazione di stallo.
+
+### 7.6.1 Istanza singola di ciascun tipo di risorsa
+
+Se tutte le risorse hanno una singola istanza si fa uso del **grafo d'attesa**, ottenuto dal grafo di assegnazione delle risorse togliendo i nodi dei tipi di risorse e componendo gli archi tra i processi.
+
+### 7.6.2 Più istanze di ciascun tipo di risorsa
+
+Si serve di strutture dati variabili nel tempo
+
+### 7.6.3 Uso dell'algoritmo di rilevamento
+
+Se le situazioni di stallo sono frequenti, è necessario ricorrere spesso all'algoriitmo per il loro rilevamento. Inoltre, il numero dei processi coinvolti nel ciclo di stallo può aumentare. Si potrebbe invocare l'algoritmo di rilevamento a intervalli definiti, oppure ogni volta che la CPU scende sotto il 40%.
+
+## 7.7 Ripristino da situazioni di stallo
+
+Una volta rilevato, uno stallo si può eliminare in 2 modi:
+
+### 7.7.1 Terminazione ddei processi
+
+Si possono adoperare 2 metodi:
+* **Terminazione di tutti i processi in stallo**
+* **Terminazione di un processo alla volta fino all'eliminazione del ciclo di stallo**. Questo metodo comporta un notevole overhead, poichè,, dopo aver terminato ogni processo,, si deve invocare un algoritmo di rilevamento per stabilire se esistono ancora processi in stallo.
+
+### 7.7.2 Prelazione delle risorse
+
+Le risorse si sottraggono in successione ad alcuni processi e si assegnano ad altri finchè si ottiene l'interruzione del ciclo di stallo.
+
+Si devono considerare i seguenti problemi:
+1. **Selezione di una vittima**
+2. **Ristablimento di un precedente stato sicuro**. Un processo a cui è stata sottratta una risorsa bisogna ricondurlo a un precedente stato sicuro, ma è più semplice terminare il processo.
+3. **Attesa indefinita**. Occorre garantire che le riisorse non siano sottratte sempre allo stesso processo.
+
 
 
 
