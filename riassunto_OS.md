@@ -554,7 +554,7 @@ Il problema delle situazioni di stallo si può affrontare in tre modi:
 
 Quest'ultima è la soluzione utilizzata dalla maggior parte dei sistemi operativi. Quindi diveta un problema dei programmatori degli applicativi.
 
-## 7.4 Prevenire le situazioni di stallo
+## 7.4 Prevenire le situazioni di stallo (Elimino una condizione necessaria)
 
 Si può prevenire il verificarsi di uno stallo assicurando che almento una delle 4 condizioni non si verifichi.
 
@@ -570,7 +570,7 @@ Il protocollo da applicare per assicurarsi che questa condizione non sussista pr
 ### 7.4.4 Attesa circolare
 Un modo per assicurare che tale condizione d'attesa non si verifichi consiste nell'imporre un ordinamento totale all'insieme dei tipi di risorse e imporre che ciascun processo richieda le risorse in ordine crescente.
 
-## 7.5 Evitare le situazioi di stallo
+## 7.5 Evitare le situazioni di stallo ( (SO)attribuire risorse in modo controllato)
 
 Un metodo per evitare situazioni di stallo consiste nel richiedere ulteriori informazioni sulle modalità di richiesta delle risorse.
 
