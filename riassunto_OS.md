@@ -874,6 +874,24 @@ Questa strategia impedisce il trashing, mantenendo il grado di multiprogrammazio
 La strategia basata sulla **frequenza dei page fault** è più diretta.
 Consiste nel fissare un limite inferiore e un limmite superiore per la frequenza desiderata dei page fault. Se la frequenza oltrepassa i limiti, il sistema agirà di conseguenza.
 
+# Capitolo 11: Interfaccia del file system
 
+## 11.3 Struttura della directory e del disco
 
-to be continued...
+### 11.3.3 Directory a un livello
+é la struttura più semplice, tutti i file sono contenuti nella stessa directory, presenta limiti notevoli.
+
+### 11.3.4 Directory a due livelli
+
+Nella struttura a ue livelli, ogni utente dispone della propria **directory utente**.
+Quando un utente fa un riferimento a un file particolare, il sistema operativo esegue la ricerca solo nella directory di quell'utente. In queesto modo utenti diversi possono avere file con lo stesso nome.
+Questa struttura isola un utente dagli altri, potrebbe essere uno svantaggio se gli utenti volgiono collaborare e accedere ai rispettivi file.
+Se l'accesso.
+Una directory a due livelli può essere vista come un albero di altezza 2. La radice è la directory principale, i suoi diretti discendenti sono le directory utente, da cui discendoono i file. Quindi ogni file ha un nome di percorso.
+
+###  11.3.5 Directory con struttura ad albero
+
+Un albero è il più comune tipo di struttura delle directory. L'albero ha una directory radice, e ogni file del sistema ha un unico nome di percorso.
+Quando si fa un riferimento a un file, si esegue ua ricerca nella directory corrente. Se il file non si tova in taale directory, l'utente deve specificare un nome di percorso.
+I nomi di percorso possono essere: **relativi** (definisce un percorso che parte dalla directory corrente) o **assoluti** (comincia dalla radice dell'albero.
+
