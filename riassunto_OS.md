@@ -895,3 +895,58 @@ Un albero è il più comune tipo di struttura delle directory. L'albero ha una d
 Quando si fa un riferimento a un file, si esegue ua ricerca nella directory corrente. Se il file non si tova in taale directory, l'utente deve specificare un nome di percorso.
 I nomi di percorso possono essere: **relativi** (definisce un percorso che parte dalla directory corrente) o **assoluti** (comincia dalla radice dell'albero.
 
+### 11.3.6 directory con struttura a grafo aciclico
+
+Un **grafo aciclico** permette alle directory di avere sottodirectory e file  condivisi. In questo modo lo stesso file può essere in due directory diverse.
+In genere viene realizzato con un **collegamento** (un puntatore). Questa struttura è più flessibile ma anche più complessa.
+
+### 11.4 Montaggio di un file system
+
+Per essere reso accessibile ai processi di un sistema, un file system deve essere montato.
+Si fornisce al sistema operativo il nome del dispositivo e la sua locazione nella struttura di file e directory alla quale agganciare il file system. (detta **punto di montaggio**) Di solito, un punto di montaggio è una directory vuota.
+Il passo successivo consiste nella verifica da parte del sistema operativo della validità del file system. Infine, il sistema operativo annota nella sua struttura della directory che un certo file system è montato al punto di montaggio specificato.
+
+## 11.5 Condivisione file
+
+### 11.5.2 File system remoti
+
+Possibile tramite ftp, DFS (file system distribuito) (permettono il montaggio di uno o più file system di uno o più calcolatori remoti in un calcolatore locale), WWW, cloud computing, può essere anonimo o autenticato.
+
+## 11.6 Protezione
+### 11.6.2 Controllo degli accessi
+
+L'approccio più comune al problema della protezione è rendere l'accesso dipendente dall'identità dell'utente. Lo schema più generale consiste nell'associare una **lista di controllo degli accessi** (**ACL**) a ogni file e directory; in tale lista sono specificati i nomi degli utenti e i relativi tipi d'accesso consentiti. Quando un utente richiede un accesso a un particolare file il sistema operativo esamina la lista di controllo degli accessi associata a quel file.
+Il problema della liste è la loro lunghezza, che causa 2 inconvenienti:
+* La costruione di una lista può essere un compito noioso.
+* L'elemento della directory deve essere di dimensione variabile, quindi avremo una gestione dello spazio più complicata.
+
+Questi problemi si risolvono introducendo una versione condensata, raggruppando gli utenti in 3 classi distinte:
+* **Proprietario**
+* **Gruppo**, insieme di utenti che condividono il file e hanno bisogno di accessi simili.
+* **
+Universo**
+
+# Capitolo 12: Realizzazione del file system
+
+## 12.1 Struttura del file system
+Un file system presenta due problemi di progettazione molto diversi.
+Il primo riguarda la definizione dell'aspetto del file system agli occhi dell'utente (file, operazioni su file, struttura delle directory).
+Il secondo riguarda la creazione di algoritmi e strutture dati che permettano di far corrispondere i file system logico ai dispositivi fisici di memoria secondaria.
+
+Lo stesso file system è generalmente composto da molti livelli distinti.
+Il livello più basso, il **controllo dell'I/O** si occupa del traferimento tra memoria centrale e seconndaria. il ** file system di base** dev soltanto inviare dei generici comandi all'appropriato driver di dispositivo per leggere e scrivere blocchi fisici nel disco. Il **modulo di organizzazione dei file** può tradurre gli indirizzi dei blocchi logici negli indirizzi dei blocchi fisici.
+Infine, il **file system logico** gestisce i metadati, cioè tutte le strutture del file system eccetto gli effettivi dati: gestisce la struttura delle directory, mantiene le strutture dei file tramite i **FCB** ed è responsabile anche della protezione e della sicurezza.
+
+### 12.2.3 File system virtuali
+
+è un componente software che permette al kernel del sistema operativo un accesso al file system attraverso delle funzioni standard e indipendenti dal reale tipo di fyle sistem utilizzato.
+
+## 12.4 Metodi di allocazione
+
+### 12.4.1 Allocazione contigua
+Il numero di posizionamenti (seek) richiesti per acedere a file il cui spazio è allocato in modo contiguo è minimo.
+Presenta alcuni problemi: bisogna individuare lo spazio per un nuovo file, il problema è, soddisfare una richiesta di dimensione n data una lista do buchi liberi (best-fit, first-fit, worst-fit), inoltre questi algoritmi soffrono di **frammentazione esterna** (soluzione: deframmentazione), altro problema: la determinazione a priori della quantità di spazio necessario per un file.
+
+### 12.4.2 Allocazione concatenata
+
+
