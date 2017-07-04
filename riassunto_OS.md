@@ -645,6 +645,12 @@ Il registro base contiene il più piccolo indirizzo legale della memoria fisica;
 Per mettere in atto tale meccanismo la CPU confronta ciascun indirizzo generato in modalità utente con i valori contenuti dai due registri.
 Qualsiasi tentativo di accedere alle aree di memoria riservate al sistema operativo comporta l'invio di un eccezione che restituisce il controllo al sistema operativo.
 
+### 8.1.2 Associazione degli indirizzi
+
+* **Compilazione**: Se nella fase di compilazione si sa dove il processo risiederà, si può generare **codice assoluto**.
+* **Caricamento***: Se nella fase di compilazione non è possibile sapere dove risiederà il processo, il compilatore deve generare **codice rilocabile**. In questo caso si ritarda l'associazione finale degli indirizzi alla fase di caricamento.
+* **Esecuzione**: se durante l'esecuzione il processo può esssere spostato da un segmento di memoria a un altro, si deve ritardare l'associazione degli indirizzi fino alla fase d'esecuzione.
+
 ### 8.1.3 Spazi di indirizzi logici e fisici
 
 Un indirizzo generato dalla CPU è chiamato **indirizzo logico**, mentre un indirizzo visto dall'unità di memoria è detto **indirizzo fisico**.
@@ -949,4 +955,32 @@ Presenta alcuni problemi: bisogna individuare lo spazio per un nuovo file, il pr
 
 ### 12.4.2 Allocazione concatenata
 
+L'**allocazione concatenata** risolve tutti i problemi dell'allocazione contigua, ogni file è composto da una lista concatenata di blocchi del disco i quali possono essere sparsi in qualsiasi punto del disco stesso. La directory contiene un puntatore al primo e all'ultimo blocco del file. Ogni blocco contiene un puntatore al blocco successivo.
+Per leggere un file occorre leggere i blocchi seguendo i puntatori da un blocco all'altro. Non esiste frammentazione esterna.
 
+Può essere usata in modo efficiente solo per i file ad accesso sequenziale. Per trovare l'i-esimo blocco di un file occorre partire dall'inizio del file e ogni accesso a un puntatore implica una lettura del disco, e talvolta un posizionamento della testina.
+Un altro svantaggio riguarda lo spazio richiesto dai puntatori.
+La soluzione più comune a questo problema consiste nel riunire un certo numero di blocchi contigui in **cluster**, cosi abbiamo meno puntatori e meno posizionamenti della testina, però abbiamo frammentazione interna.
+
+Un altro problema riguarda l'affidabilità. Poichè i file sono tenuti insieme da puntatori sparsi nel disco.
+
+Una variante importante del metodo di allocazione concatenata consiste nell'uso della **tabella di allocazione dei file** (**FAT**).
+Per contenere la tabella si riserva una sezione del disco all'inizio di ciascun volume. la FAT ha un elemento per ogni blocco del disco ed è indicizzat dal numero di blocco.
+
+### 12.4.3 Allocazione indicizzata
+
+In mancanza di una FAT,l'allocazione concatenata non è in grado di sostenere un efficiente accesso diretto. L'**allocazione indicizzata** risolve questo problema, raggruppando tutti i puntatori in una sola posizione: il **blocco indice**.
+Ogni file ha il proprio blocco indice: si tratta di un array d'indirizzi di blocchi del disco.
+
+L'allocazione indicizzata soffre tuttavia di un overhead maggiore: lo spazio richiesto dai puntatori del blocco indice. Occorre allocare un intero blocco indice. per gestire il problema delle dimensioni del blocco indice vi sono i seguenti meccanismi:
+* **Schema concatenato**
+* **Indice a più livelli**: consiste nell'impiego di un blocco indice di pprimo livello che punta a un insieme di blocchi indice di secondo livelloche, a loro volta, puntano ai blocchi dei file.
+* **Schema combinato**: consiste nel tenere i primi 15 puntatori del blocco indice nell'inode del file. I primi 12 puntano a **blocchi diretti**. Gli altri 3 puntano a **blocchi indiretti**, il primo a un **blocco indiretto singolo**, il secondo a un **blocco indiretto doppio** e il terzo a un **blocco indiretto triplo**
+
+## 2.5 Gestione dello spazio libero
+
+Per tenere traccia dello spazio libero in un disco, il sistema conserva una **lista dello spazio libero**.
+
+Spesso la lista dello spazio libero si realizza come una **mappa di bit**. Ogni blocco è rappresentato  da un bit: se è libero è 1, se assegnato 0.
+Un altro metodo consiste nel collegare tutti i blocchi liberi e tenere un puntatore al primo di questi.
+Un altro approccio sfrutta il fatto che, generalemnte, più blocchi contigui si possono allocare contemporaneamente, quindi, è sufficiente tenere l'indirizzo del primo blocco libero e il numero n di blocchi liberi contigui.
